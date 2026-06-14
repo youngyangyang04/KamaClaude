@@ -16,6 +16,7 @@ dependencies = [
 ]
 
 # 安装后可在 PATH 中执行的入口：`kama` / `kama-core` / `kama-tui`
+# 这是命令行入口点的映射。意思是： 命令名 = "包名.模块名:函数名"
 [project.scripts]
 kama = "kama_claude.cli.main:main"
 kama-core = "kama_claude.core.app:run"
