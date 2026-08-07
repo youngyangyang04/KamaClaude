@@ -2,6 +2,10 @@
 
 本地 AI Agent 系统。`scott-core` 作为常驻守护进程处理所有任务，`scott`（CLI）和 `scott-tui`（TUI）通过 TCP loopback 与之通信。
 
+## 界面展示
+
+![ScottClaude TUI 界面](docs/assets/scottclaude-tui.png)
+
 ## 环境要求
 
 | 依赖 | 版本 |
