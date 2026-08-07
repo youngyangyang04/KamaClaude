@@ -4,7 +4,7 @@
 
 ## Transport
 
-- TCP loopback `127.0.0.1:7437` (override via `KAMA_HOST` / `KAMA_PORT`)
+- TCP loopback `127.0.0.1:7437` (override via `SCOTT_HOST` / `SCOTT_PORT`)
 - Each message is one `\n`-terminated JSON line (NDJSON)
 - Commands use JSON-RPC 2.0 (client → server); Events use `kind=event` envelope (server → client)
 
@@ -1379,7 +1379,7 @@ Events written to `runs/<run_id>/events.jsonl` and forwarded over IPC to subscri
   "type": "log.line",
   "run_id": "20260516-100000-abc123",
   "level": "INFO",
-  "source": "kama_claude.core.loop",
+  "source": "scott_claude.core.loop",
   "message": "step 1 started",
   "ts": "2026-05-16T10:00:00.001Z"
 }

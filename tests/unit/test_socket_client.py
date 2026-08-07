@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from kama_claude.core.transport.socket_client import IpcError, SocketClient
+from scott_claude.core.transport.socket_client import IpcError, SocketClient
 
 
 async def _start_mock_server(

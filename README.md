@@ -1,6 +1,6 @@
-# KamaClaude
+# ScottClaude
 
-本地 AI Agent 系统。`kama-core` 作为常驻守护进程处理所有任务，`kama`（CLI）和 `kama-tui`（TUI）通过 TCP loopback 与之通信。
+本地 AI Agent 系统。`scott-core` 作为常驻守护进程处理所有任务，`scott`（CLI）和 `scott-tui`（TUI）通过 TCP loopback 与之通信。
 
 ## 环境要求
 
@@ -21,13 +21,13 @@ Python 3.12 由 uv 自动管理，无需手动安装。
 ## 快速开始
 
 ```bash
-git clone <repo> && cd KamaClaude
+git clone <repo> && cd ScottClaude
 uv sync
 cp .env.example .env        # 按需修改
 
-uv run kama-core &          # 启动守护进程（后台）
-uv run kama ping            # 验证连通：应返回 pong
-uv run kama --version       # 应输出 0.0.1
+uv run scott-core &          # 启动守护进程（后台）
+uv run scott ping            # 验证连通：应返回 pong
+uv run scott --version       # 应输出 0.0.1
 ```
 
 ## 文档

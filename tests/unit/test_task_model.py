@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from kama_claude.core.task.model import Task
+from scott_claude.core.task.model import Task
 
 
 # 功能：验证 Task.to_dict() 包含所有预期字段
