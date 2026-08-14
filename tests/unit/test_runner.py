@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from kama_claude.core.config import KamaConfig
 from kama_claude.core.events.bus import EventBus
-from kama_claude.core.llm.types import LlmResponse, ToolCallBlock
+from kama_claude.core.llm.types import LlmResponse, ToolCallBlock, UsageStats
 from kama_claude.core.runner import AgentRunner
 
 # --- mock provider -----------------------------------------------------------
@@ -71,6 +71,38 @@ class _CapturingProvider:
         self.messages = [dict(m) for m in messages]
         self.system = system
         return self.response
+
+
+class _AutoCompactingProvider:
+    """Triggers one automatic compact, then finishes the run."""
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def chat(
+        self,
+        messages: list[dict[str, object]],
+        tool_schemas: list[dict[str, object]],
+        bus: EventBus,
+        run_id: str,
+        *,
+        step: int = 0,
+        system: str | None = None,
+    ) -> LlmResponse:
+        self.calls += 1
+        if run_id == "compact":
+            return LlmResponse(
+                stop_reason="end_turn",
+                text="COMPACT SUMMARY",
+                usage=UsageStats(input_tokens=100, output_tokens=20),
+            )
+        if self.calls == 1:
+            return LlmResponse(
+                stop_reason="tool_use",
+                tool_calls=[ToolCallBlock(id="unknown-1", name="unknown_tool", input={})],
+                usage=UsageStats(input_tokens=900, output_tokens=10, context_pct=0.9),
+            )
+        return LlmResponse(stop_reason="end_turn", text="final answer")
 
 
 # --- helpers -----------------------------------------------------------------
@@ -256,6 +288,44 @@ async def test_session_history_and_notes_injected(tmp_path: Path) -> None:
     assert "Python 3.12" in provider.system
     assert (store.runs_dir("sess-1") / "run-new" / "events.jsonl").exists()
     assert not (tmp_path / "runs" / "run-new").exists()
+
+
+# 功能：验证自动 compact 后完整重写 thread，而不是使用旧 prefill_len 切片
+# 设计：compact 将初始历史替换为摘要后继续完成 run，摘要和后续消息都必须持久化
+async def test_auto_compact_rewrites_full_session_history(tmp_path: Path) -> None:
+    from kama_claude.core.session.model import Session
+    from kama_claude.core.session.store import SessionStore
+
+    store = SessionStore(tmp_path / "sessions")
+    session = Session(
+        id="sess-compact",
+        mode="chat",
+        status="active",
+        title="",
+        created_at="t",
+        updated_at="t",
+    )
+    store.write_meta(session)
+    store.append_message(session.id, "user", "original goal")
+
+    config = _config(max_steps=3)
+    config.compaction.auto_threshold = 0.8
+    runner = AgentRunner(
+        config,
+        provider=_AutoCompactingProvider(),  # type: ignore[arg-type]
+        runs_dir=tmp_path / "runs",
+    )
+
+    await runner.run_and_capture(
+        "original goal",
+        run_id="run-compact",
+        session=session,
+        store=store,
+    )
+
+    messages = store.read_messages(session.id)
+    assert messages[0]["content"] == "COMPACT SUMMARY"
+    assert messages[-1]["content"] == [{"type": "text", "text": "final answer"}]
 
 
 # 功能：验证 session run 中注册了 note_save，工具调用会写入 notes.md
