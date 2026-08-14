@@ -247,6 +247,34 @@ ScottClaude 最大的亮点，是把 Claude Code 这类 AI 编程 Agent 背后�
 
 也就是说，这个项目真正能讲的不是“我接了一个大模型接口”，而是“我实现了一个本地 Agent 运行时”。
 
+### S8：creator 创造模式（Agent 创作 Agent）
+
+`creator` 是一个内置的元 Agent 预设：它能在会话里**创作、修改、校验、导出其他预设**（Agent Profile 与 Skill），形成 agent 创作 agent 的闭环。
+
+**预设工具集**（会话内可用，`preset_validate`/`preset_write`/`preset_import` 默认仅 `creator` 预设自带）：
+
+| 工具 | 作用 |
+| --- | --- |
+| `preset_list` | 列出全部预设，带层级标记（B=内建 / G=用户全局 / L=项目本地） |
+| `preset_show` | 查看某个预设的解析结果与原始内容 |
+| `preset_validate` | 不落盘校验草稿（TOML / Markdown） |
+| `preset_write` | 校验通过后原子写入 `.scott/`（默认）或 `~/.scott/` |
+| `preset_export` | 导出为可分享的 Markdown 预设包（`./workspace/`） |
+| `preset_import` | 把导出的预设包还原到项目，完成分享闭环 |
+
+**CLI 调试命令**（`scott preset ...`，本地直接操作文件，无需 daemon）：
+
+```
+scott preset list [--kind agent|skill|all]
+scott preset show <kind> <name>
+scott preset validate <kind> <file>
+scott preset new <name> --kind agent|skill
+scott preset export <kind> <name> [-o out.md]
+scott preset import <file.md> [--global]
+```
+
+**信任边界**：`creator` 的会话视为「能改变未来会话行为」——你写下的预设会成为其他会话的行为来源。写盘需审批（`preset_write`/`preset_import` 默认 ASK）、写入前强制校验、永不写入内建目录（builtin）。
+
 
 ### 这个项目适合谁？
 

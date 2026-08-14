@@ -203,6 +203,17 @@ class SkillInvokedEvent(BaseModel):
     ts: str
 
 
+class PresetChangedEvent(BaseModel):
+    type: Literal["preset.changed"] = "preset.changed"
+    kind: str          # "agent" | "skill"
+    name: str
+    action: str        # "write" | "export" | "import"
+    tier: str          # "L" | "G"
+    path: str
+    run_id: str = ""
+    ts: str
+
+
 # 根据 type 字段决定事件类型的判别联合
 Event = Annotated[
     CoreStartedEvent
@@ -228,6 +239,7 @@ Event = Annotated[
     | PermissionDeniedEvent
     | SubagentStartedEvent
     | SubagentFinishedEvent
-    | SkillInvokedEvent,
+    | SkillInvokedEvent
+    | PresetChangedEvent,
     Discriminator("type"),
 ]

@@ -18,6 +18,7 @@ from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Label, Static, TextArea
 
+from scott_claude.core.agents.loader import AgentProfileLoader
 from scott_claude.core.config import ScottConfig
 from scott_claude.core.skills.loader import SkillLoader
 from scott_claude.core.transport.socket_client import IpcError, SocketClient
@@ -542,7 +543,10 @@ class ScottTuiApp(App[None]):
 
     # 构建斜杠命令候选列表：内建命令 + 所有已注册 skill
     def _build_slash_items(self) -> list[tuple[str, str]]:
-        items: list[tuple[str, str]] = [("compact", "compress context window")]
+        items: list[tuple[str, str]] = [
+            ("compact", "compress context window"),
+            ("presets", "show agent/skill preset catalog"),
+        ]
         try:
             loader = SkillLoader()
             for skill in loader.list_all_skills():
@@ -553,6 +557,40 @@ class ScottTuiApp(App[None]):
         except Exception:
             pass
         return items
+
+    # 构建本地预设目录摘要文本：agents 与 skills 各一段，带 B/G/L 层级标记
+    def _presets_summary(self) -> str:
+        from pathlib import Path
+
+        from scott_claude.core.tools.builtin.preset_common import tier_for
+
+        parts: list[str] = []
+        agent_loader = AgentProfileLoader()
+        agent_lines: list[str] = []
+        for name in agent_loader.list_all():
+            path = agent_loader.resolve_path(name)
+            tier = tier_for(
+                path, AgentProfileLoader._BUILTIN_DIR,
+                Path("~/.scott/agents").expanduser(), Path(".scott/agents"),
+            ) if path else "?"
+            profile = agent_loader.load(name)
+            desc = profile.description if profile is not None else ""
+            agent_lines.append(f"[{tier}] {name} — {desc}")
+        parts.append("[agents]\n" + "\n".join(agent_lines))
+
+        skill_loader = SkillLoader()
+        skill_lines: list[str] = []
+        for name in skill_loader.list_all():
+            path = skill_loader.resolve_path(name)
+            tier = tier_for(
+                path, SkillLoader._BUILTIN_DIR,
+                Path("~/.scott/skills").expanduser(), Path(".scott/skills"),
+            ) if path else "?"
+            skill = skill_loader.resolve(name)
+            desc = skill.description if skill is not None else ""
+            skill_lines.append(f"[{tier}] {name} — {desc}")
+        parts.append("[skills]\n" + "\n".join(skill_lines))
+        return "\n\n".join(parts)
 
     # 根据 / 前缀查询字符串挂载、更新或移除自动补全弹窗
     def on_chat_text_area_slash_changed(self, event: ChatTextArea.SlashChanged) -> None:
@@ -629,6 +667,12 @@ class ScottTuiApp(App[None]):
             event.text_area.text = ""
             if self._client is not None and self._session_id is not None and not self._busy:
                 self.run_worker(self._do_compact(), name="compact", exclusive=False)
+            return
+        # 本地展示预设目录（不经过 daemon，与 skill 补全同源读取）
+        if content == "/presets":
+            event.text_area.text = ""
+            self._append(Static(f"[bold]>[/bold] {content}", classes="user-turn"))
+            self._append(Static(self._presets_summary(), classes="log-line"))
             return
         if self._client is None or self._session_id is None or self._busy:
             self._append(Static("[yellow]agent busy or disconnected[/yellow]", classes="log-line"))

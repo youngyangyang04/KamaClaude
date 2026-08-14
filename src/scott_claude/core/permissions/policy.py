@@ -43,6 +43,11 @@ DEFAULT_POLICIES: dict[str, ToolPolicy] = {
     "read_file":  ToolPolicy(default=PermissionDecision.ALLOW),
     "list_dir":   ToolPolicy(default=PermissionDecision.ALLOW),
     "note_save":  ToolPolicy(default=PermissionDecision.ALLOW),
+    # preset_export 只在 ./workspace 内写产物（工具内部强制），故默认放行
+    "preset_export": ToolPolicy(default=PermissionDecision.ALLOW),
+    # preset_import/preset_write 会改变未来会话行为来源，默认必须审批
+    "preset_import": ToolPolicy(default=PermissionDecision.ASK),
+    "preset_write": ToolPolicy(default=PermissionDecision.ASK),
 }
 
 # 未在 DEFAULT_POLICIES 中登记的工具的兜底策略
@@ -55,6 +60,9 @@ _PREVIEW_KEY: dict[str, str] = {
     "write_file": "path",
     "list_dir":   "path",
     "note_save":  "content",
+    "preset_write": "name",
+    "preset_export": "name",
+    "preset_import": "path",
 }
 _PREVIEW_MAX = 60
 

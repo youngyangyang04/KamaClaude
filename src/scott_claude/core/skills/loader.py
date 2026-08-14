@@ -16,10 +16,9 @@ class Skill:
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 
 
-# 解析 Markdown skill 文件，提取 frontmatter 和正文 system prompt
-def _parse_skill_file(path: Path) -> Skill:
-    text = path.read_text(encoding="utf-8")
-    name = path.stem
+# 解析 Markdown skill 文本，提取 frontmatter 和正文 system prompt（不依赖文件名）
+def parse_skill_text(text: str) -> Skill:
+    name = ""
     description = ""
     allowed_tools: list[str] = []
     body = text
@@ -42,7 +41,7 @@ def _parse_skill_file(path: Path) -> Skill:
                     fold = val == ">"
                     parts: list[str] = []
                     i += 1
-                    while i < len(lines) and (lines[i].startswith(" ") or lines[i].startswith("\t")):
+                    while i < len(lines) and lines[i].startswith((" ", "\t")):
                         parts.append(lines[i].strip())
                         i += 1
                     description = (" ".join(parts) if fold else "\n".join(parts)).strip()
@@ -61,6 +60,15 @@ def _parse_skill_file(path: Path) -> Skill:
         system_prompt_template=body.strip(),
         allowed_tools=allowed_tools,
     )
+
+
+# 解析 Markdown skill 文件；frontmatter 缺 name 时回退用文件名
+def _parse_skill_file(path: Path) -> Skill:
+    text = path.read_text(encoding="utf-8")
+    skill = parse_skill_text(text)
+    if not skill.name:
+        skill.name = path.stem
+    return skill
 
 
 # 按三级优先级（项目本地 > 用户全局 > 内建）查找并解析 skill
@@ -89,6 +97,13 @@ class SkillLoader:
             paths.append(d / f"{name}.md")
             paths.append(d / name / "SKILL.md")
         return paths
+
+    # 按优先级返回第一个存在的 skill 文件路径；未找到返回 None
+    def resolve_path(self, name: str) -> Path | None:
+        for path in self._search_paths(name):
+            if path.exists():
+                return path
+        return None
 
     # 列出所有可用 skill 名称（内建 + 用户全局 + 项目本地，去重后以项目本地覆盖为准）
     def list_all(self) -> list[str]:

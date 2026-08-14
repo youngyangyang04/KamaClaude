@@ -35,6 +35,26 @@ class AgentProfileLoader:
         local = Path(".scott/agents") / f"{name}.toml"
         return [local, global_, builtin]
 
+    # 按优先级返回第一个存在的配置文件路径；未找到返回 None
+    def resolve_path(self, name: str) -> Path | None:
+        for path in self._search_paths(name):
+            if path.exists():
+                return path
+        return None
+
+    # 列出所有可用角色名（内建 + 用户全局 + 项目本地，去重后以项目本地覆盖为准）
+    def list_all(self) -> list[str]:
+        seen: dict[str, None] = {}
+        for d in [
+            self._BUILTIN_DIR,
+            Path("~/.scott/agents").expanduser(),
+            Path(".scott/agents"),
+        ]:
+            if d.exists():
+                for f in sorted(d.glob("*.toml")):
+                    seen[f.stem] = None
+        return list(seen)
+
     # 解析 TOML 角色配置文件
     def _parse(self, path: Path, name: str) -> AgentProfile:
         with open(path, "rb") as f:

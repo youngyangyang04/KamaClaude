@@ -28,6 +28,12 @@ from scott_claude.core.tools.builtin import (
     BashTool,
     ListDirTool,
     NoteSaveTool,
+    PresetExportTool,
+    PresetImportTool,
+    PresetListTool,
+    PresetShowTool,
+    PresetValidateTool,
+    PresetWriteTool,
     ReadFileTool,
     TaskCreateTool,
     TaskGetTool,
@@ -99,6 +105,17 @@ class AgentRunner:
         for t in [ReadFileTool(), BashTool(), WriteFileTool(), ListDirTool()]:
             if _ok(t.name):
                 registry.register(t)
+        # 预设目录工具：只读的 list/show 与只写 workspace 的 export 全局注册；
+        # 校验/写入/导入按白名单注入（默认仅 creator 预设）
+        registry.register(PresetListTool())
+        registry.register(PresetShowTool())
+        registry.register(PresetExportTool(bus=bus, run_id=run_id or ""))
+        if _ok("preset_validate"):
+            registry.register(PresetValidateTool(registry))
+        if _ok("preset_write"):
+            registry.register(PresetWriteTool(registry, bus=bus, run_id=run_id or ""))
+        if _ok("preset_import"):
+            registry.register(PresetImportTool(registry, bus=bus, run_id=run_id or ""))
         for t in [
             TaskCreateTool(task_manager),
             TaskUpdateTool(task_manager),
