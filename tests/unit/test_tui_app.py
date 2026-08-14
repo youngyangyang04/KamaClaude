@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from rich.markdown import Markdown
+from rich.markup import escape
+from rich.text import Text
 from textual.widget import Widget
 
 from kama_claude.tui.app import (
@@ -147,6 +149,28 @@ def test_tool_call_started_and_finished() -> None:
     assert isinstance(block, ToolCallBlock)
     assert block._finished  # type: ignore[attr-defined]
     assert block._output == "hi"  # type: ignore[attr-defined]
+
+
+# 功能：验证工具详情中的原始输出不会被 Rich 当作 markup 解析
+# 设计：模拟文件内容包含非法关闭标签，展开详情后交给 Rich 解析不应抛 MarkupError
+def test_tool_detail_escapes_raw_markup(monkeypatch) -> None:
+    class _Detail:
+        rendered: str = ""
+
+        def update(self, content: str) -> None:
+            self.rendered = content
+
+    raw = "source = '[/{color}]'"
+    detail = _Detail()
+    block = ToolCallBlock("read_file", {"path": "src/kama_claude/tui/app.py"})
+    block.set_result(raw, 1)
+    monkeypatch.setattr(block, "query_one", lambda *_args: detail)
+    monkeypatch.setattr(block, "add_class", lambda *_args: None)
+
+    block.on_click()
+
+    assert escape(raw) in detail.rendered
+    Text.from_markup(detail.rendered)
 
 
 # 功能：验证 note_save 成功完成时工具块摘要显示 remembered

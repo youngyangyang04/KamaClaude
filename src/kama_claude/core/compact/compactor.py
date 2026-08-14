@@ -84,6 +84,7 @@ class Compactor:
             {"role": "user", "content": result.summary_text},
             {"role": "assistant", "content": "Understood, I'll continue from this summary."},
         ]
+        context.compacted = True
         self._write_summary(result.summary_text)
         await self._bus.publish(
             ContextCompactedEvent(

@@ -8,6 +8,7 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 from rich.markdown import Markdown
+from rich.markup import escape
 from textual import events
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -103,9 +104,9 @@ class ToolCallBlock(Widget):
             return f"  [green]remembered[/green]  [dim]{self._elapsed_ms}ms[/dim]"
 
         params_pre = _param_summary(self._tool_name, self._params)
-        line = f"  [dim]tool[/dim] [bold]{self._tool_name}[/bold]"
+        line = f"  [dim]tool[/dim] [bold]{escape(self._tool_name)}[/bold]"
         if params_pre:
-            line += f"  [dim]{params_pre}[/dim]"
+            line += f"  [dim]{escape(params_pre)}[/dim]"
         if self._finished:
             color = "red" if self._is_error else "green"
             status = "failed" if self._is_error else "done"
@@ -131,8 +132,8 @@ class ToolCallBlock(Widget):
         else:
             detail = self.query_one(".detail", Static)
             detail.update(
-                f"[dim]params[/dim]\n{self._params_full}\n\n"
-                f"[dim]output[/dim]\n{self._output}\n\n"
+                f"[dim]params[/dim]\n{escape(self._params_full)}\n\n"
+                f"[dim]output[/dim]\n{escape(self._output)}\n\n"
                 f"[dim]elapsed:[/dim] {self._elapsed_ms}ms"
             )
             self.add_class("expanded")
