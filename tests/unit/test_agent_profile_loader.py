@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from kama_claude.core.agents.loader import AgentProfileLoader
+from scott_claude.core.agents.loader import AgentProfileLoader
 
 
 # 功能：内建 planner 角色配置应能被 AgentProfileLoader 加载
@@ -59,9 +59,9 @@ model = "claude-sonnet-4-6"
 
 
 # 功能：项目本地角色配置应覆盖内建同名配置
-# 设计：在 .kama/agents/ 中写入同名 TOML，monkeypatch cwd，断言加载到本地版本
+# 设计：在 .scott/agents/ 中写入同名 TOML，monkeypatch cwd，断言加载到本地版本
 def test_project_overrides_builtin(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    local_agents = tmp_path / ".kama" / "agents"
+    local_agents = tmp_path / ".scott" / "agents"
     local_agents.mkdir(parents=True)
     (local_agents / "planner.toml").write_text(
         '[agent]\ndescription = "local planner"\nsystem_prompt = "local prompt"\n'

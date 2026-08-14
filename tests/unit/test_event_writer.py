@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from kama_claude.core.bus.events import RunFinishedEvent, RunStartedEvent
-from kama_claude.core.events.bus import EventBus
-from kama_claude.core.events.writer import EventWriter
+from scott_claude.core.bus.events import RunFinishedEvent, RunStartedEvent
+from scott_claude.core.events.bus import EventBus
+from scott_claude.core.events.writer import EventWriter
 
 
 # 功能：验证 handle 后事件被正确序列化为单行 JSONL 写入磁盘
@@ -90,7 +90,7 @@ async def test_event_writer_oserror_is_logged(
     path = tmp_path / "events.jsonl"
     event = RunStartedEvent(run_id="r1", goal="g", ts="2026-05-11T00:00:00Z")
 
-    with caplog.at_level(logging.ERROR, logger="kama_claude.core.events.writer"):
+    with caplog.at_level(logging.ERROR, logger="scott_claude.core.events.writer"):
         async with EventWriter(path) as writer:
             assert writer._file is not None
             writer._file.close()

@@ -7,10 +7,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from kama_claude.core.compact.compactor import Compactor
-from kama_claude.core.context import ExecutionContext
-from kama_claude.core.events.bus import EventBus
-from kama_claude.core.llm.types import LlmResponse, UsageStats
+from scott_claude.core.compact.compactor import Compactor
+from scott_claude.core.context import ExecutionContext
+from scott_claude.core.events.bus import EventBus
+from scott_claude.core.llm.types import LlmResponse, UsageStats
 
 
 def _stub_provider(summary: str = "## 1. Original Goal\nTest\n## 2. Completed Steps\n- done") -> Any:

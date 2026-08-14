@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from kama_claude.core.tools.base import BaseTool, ToolResult
-from kama_claude.core.tools.registry import ToolRegistry
+from scott_claude.core.tools.base import BaseTool, ToolResult
+from scott_claude.core.tools.registry import ToolRegistry
 
 
 class _FakeTool(BaseTool):

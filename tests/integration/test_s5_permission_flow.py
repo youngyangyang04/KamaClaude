@@ -11,11 +11,11 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from kama_claude.core.config import KamaConfig
-from kama_claude.core.events.bus import EventBus
-from kama_claude.core.llm.types import LlmResponse, ToolCallBlock
-from kama_claude.core.permissions.manager import PermissionManager
-from kama_claude.core.runner import AgentRunner
+from scott_claude.core.config import ScottConfig
+from scott_claude.core.events.bus import EventBus
+from scott_claude.core.llm.types import LlmResponse, ToolCallBlock
+from scott_claude.core.permissions.manager import PermissionManager
+from scott_claude.core.runner import AgentRunner
 
 # ── stub providers ────────────────────────────────────────────────────────────
 
@@ -80,7 +80,7 @@ def _runner(
     tmp_path: Path,
     max_steps: int = 10,
 ) -> AgentRunner:
-    config = KamaConfig()
+    config = ScottConfig()
     config.agent.max_steps = max_steps
     return AgentRunner(
         config,

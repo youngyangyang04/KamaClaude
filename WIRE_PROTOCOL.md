@@ -4,7 +4,7 @@
 
 ## Transport
 
-- TCP loopback `127.0.0.1:7437` (override via `KAMA_HOST` / `KAMA_PORT`)
+- TCP loopback `127.0.0.1:7437` (override via `SCOTT_HOST` / `SCOTT_PORT`)
 - Each message is one `\n`-terminated JSON line (NDJSON)
 - Commands use JSON-RPC 2.0 (client → server); Events use `kind=event` envelope (server → client)
 
@@ -1379,7 +1379,7 @@ Events written to `runs/<run_id>/events.jsonl` and forwarded over IPC to subscri
   "type": "log.line",
   "run_id": "20260516-100000-abc123",
   "level": "INFO",
-  "source": "kama_claude.core.loop",
+  "source": "scott_claude.core.loop",
   "message": "step 1 started",
   "ts": "2026-05-16T10:00:00.001Z"
 }
@@ -1629,6 +1629,90 @@ Events written to `runs/<run_id>/events.jsonl` and forwarded over IPC to subscri
 {
   "type": "session.closed",
   "session_id": "sess-abc123def456",
+  "ts": "2026-05-16T10:00:00.001Z"
+}
+```
+
+## Preset Events
+
+Events about preset catalog changes (agent profiles and skills).
+
+### PresetChangedEvent
+
+| Field | Type | Required |
+|---|---|---|
+| `type` | `string` | no |
+| `kind` | `string` | yes |
+| `name` | `string` | yes |
+| `action` | `string` | yes |
+| `tier` | `string` | yes |
+| `path` | `string` | yes |
+| `run_id` | `string` | no |
+| `ts` | `string` | yes |
+
+```json
+{
+  "properties": {
+    "type": {
+      "const": "preset.changed",
+      "default": "preset.changed",
+      "title": "Type",
+      "type": "string"
+    },
+    "kind": {
+      "title": "Kind",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "action": {
+      "title": "Action",
+      "type": "string"
+    },
+    "tier": {
+      "title": "Tier",
+      "type": "string"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "run_id": {
+      "default": "",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "ts": {
+      "title": "Ts",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "name",
+    "action",
+    "tier",
+    "path",
+    "ts"
+  ],
+  "title": "PresetChangedEvent",
+  "type": "object"
+}
+```
+
+**Example:**
+
+```json
+{
+  "type": "preset.changed",
+  "kind": "skill",
+  "name": "author-preset",
+  "action": "write",
+  "tier": "L",
+  "path": ".scott/skills/author-preset.md",
+  "run_id": "20260516-100000-abc123",
   "ts": "2026-05-16T10:00:00.001Z"
 }
 ```

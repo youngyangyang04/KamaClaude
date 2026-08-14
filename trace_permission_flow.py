@@ -3,7 +3,7 @@
 端到端权限审批流程诊断脚本
 
 模拟 TUI 的完整链路：
-  1. 连接 kama-core，订阅事件
+  1. 连接 scott-core，订阅事件
   2. 创建 session，发消息触发 bash 工具（bash 总是需要审批）
   3. 收到 permission.requested → 自动回复 allow_once
   4. 等待 run.finished，打印全部事件日志

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import socket
 
-from kama_claude.core.transport.socket_server import SocketServer
+from scott_claude.core.transport.socket_server import SocketServer
 
 
 def _free_port() -> int:
