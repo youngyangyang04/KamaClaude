@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from kama_claude.core.tools.builtin.read_file import ReadFileTool
+from scott_claude.core.tools.builtin.read_file import ReadFileTool
 
 
 # 功能：验证读取存在的文件时返回完整内容且 is_error 为 False

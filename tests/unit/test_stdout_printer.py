@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from kama_claude.cli.commands.run import StdoutPrinter
+from scott_claude.cli.commands.run import StdoutPrinter
 
 
 # 功能：验证 run.started 事件在 stdout 中打印 [run] 前缀和 run_id

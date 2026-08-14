@@ -1,4 +1,4 @@
-# KamaClaude 项目配置（PEP 621 + Hatch 构建 + 常用工具链）
+# ScottClaude 项目配置（PEP 621 + Hatch 构建 + 常用工具链）
 
 # ---- PEP 517：声明如何构建 wheel/sdist ----
 [build-system]
@@ -7,26 +7,26 @@ build-backend = "hatchling.build" # 使用 Hatchling 作为构建后端
 
 # ---- 项目元数据与运行时依赖（PEP 621）----
 [project]
-name = "KamaClaude"
+name = "ScottClaude"
 version = "0.0.1"
 requires-python = ">=3.12,<3.13" # 仅支持 3.12 小版本范围，与 CI/类型检查一致
 dependencies = [
     "pydantic>=2.0",       # 数据校验与序列化（含 JSON 模型等）
     "python-dotenv>=1.0",  # .env 文件解析
     "anthropic>=0.25",     # Anthropic LLM SDK（流式 + prompt caching）
-    "textual>=0.75",       # 终端 UI 框架（kama-tui）
+    "textual>=0.75",       # 终端 UI 框架（scott-tui）
     "httpx[socks]>=0.28.1",
 ]
 
-# 安装后可在 PATH 中执行的入口：`kama` / `kama-core` / `kama-tui`
+# 安装后可在 PATH 中执行的入口：`scott` / `scott-core` / `scott-tui`
 [project.scripts]
-kama = "kama_claude.cli.main:main"
-kama-core = "kama_claude.core.app:run"
-kama-tui = "kama_claude.tui.__main__:main"
+scott = "scott_claude.cli.main:main"
+scott-core = "scott_claude.core.app:run"
+scott-tui = "scott_claude.tui.__main__:main"
 
 # ---- Hatch：打 wheel 时从 src 布局收录包 ----
 [tool.hatch.build.targets.wheel]
-packages = ["src/kama_claude"] # 源码在 src/kama_claude
+packages = ["src/scott_claude"] # 源码在 src/scott_claude
 
 # ---- 开发期依赖（PEP 735）----
 [dependency-groups]

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from kama_claude.core.bus.envelope import (
+from scott_claude.core.bus.envelope import (
     PARSE_ERROR,
     JsonRpcRequest,
     JsonRpcSuccess,

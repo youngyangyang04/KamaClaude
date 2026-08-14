@@ -16,8 +16,8 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from kama_claude.core.config import KamaConfig
-from kama_claude.core.runner import AgentRunner
+from scott_claude.core.config import ScottConfig
+from scott_claude.core.runner import AgentRunner
 
 # Load project .env so ANTHROPIC_API_KEY is available without going through get_config()
 load_dotenv(Path(__file__).parent.parent.parent / ".env", override=False)
@@ -55,7 +55,7 @@ async def test_run_e2e_reads_file_and_succeeds(
     )
     runs_dir = tmp_path / "runs"
 
-    config = KamaConfig()
+    config = ScottConfig()
     config.agent.max_steps = 5
 
     runner = AgentRunner(config, runs_dir=runs_dir)

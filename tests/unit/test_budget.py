@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from kama_claude.core.compact.budget import truncate_tool_results
+from scott_claude.core.compact.budget import truncate_tool_results
 
 
 def _make_tool_result_msg(content: str) -> dict:
