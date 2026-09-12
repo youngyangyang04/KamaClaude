@@ -32,11 +32,12 @@ def _make_final(
     input_tokens: int = 100,
     output_tokens: int = 50,
     cache_read: int = 0,
+    cache_create: int = 0,
 ) -> MagicMock:
     msg = MagicMock()
     msg.stop_reason = stop_reason
     msg.content = content or []
-    msg.usage = _make_usage(input_tokens, output_tokens, cache_read)
+    msg.usage = _make_usage(input_tokens, output_tokens, cache_read, cache_create)
     return msg
 
 
@@ -72,8 +73,9 @@ def _make_provider(
     input_tokens: int = 100,
     output_tokens: int = 50,
     cache_read: int = 0,
+    cache_create: int = 0,
 ) -> tuple[AnthropicProvider, MagicMock]:
-    final = _make_final(stop_reason, content, input_tokens, output_tokens, cache_read)
+    final = _make_final(stop_reason, content, input_tokens, output_tokens, cache_read, cache_create)
     client = MagicMock()
     client.messages.stream.return_value = FakeStream(texts or [], final)
     return AnthropicProvider(model="test-model", client=client), client
@@ -126,10 +128,10 @@ async def test_token_events_published_per_chunk() -> None:
     assert tokens[1].token == " world"  # type: ignore[attr-defined]
 
 
-# 功能：验证 llm.usage 事件中的 token 统计字段（input、output、cache_read）正确
-# 设计：向 FakeStream 注入固定 usage 值，断言三个字段精确匹配，因为这些字段是 S6 成本计算的数据源
+# 功能：验证 llm.usage 事件中的 token 统计字段（input、output、cache_read、cache_create）正确
+# 设计：向 FakeStream 注入固定 usage 值，断言四个字段精确匹配，因为这些字段是 S6 成本计算的数据源
 async def test_usage_event_published_after_stream() -> None:
-    provider, _ = _make_provider(input_tokens=200, output_tokens=75, cache_read=150)
+    provider, _ = _make_provider(input_tokens=200, output_tokens=75, cache_read=150, cache_create=50)
     _, events = await _chat(provider)
     usage_events = [e for e in events if e.type == "llm.usage"]  # type: ignore[attr-defined]
     assert len(usage_events) == 1
@@ -137,6 +139,17 @@ async def test_usage_event_published_after_stream() -> None:
     assert ue.input_tokens == 200  # type: ignore[attr-defined]
     assert ue.output_tokens == 75  # type: ignore[attr-defined]
     assert ue.cache_read_input_tokens == 150  # type: ignore[attr-defined]
+    assert ue.cache_creation_input_tokens == 50  # type: ignore[attr-defined]
+
+
+# 功能：验证 context_pct 正确包含 input + cache_read + cache_create 三段之和
+# 设计：设置 100K input + 60K cache_read + 40K cache_create = 200K / 200K 窗口 = 100%；
+#       若只用 input_tokens 会算出 50%，验证修正后的公式覆盖完整上下文占用
+async def test_context_pct_includes_cache_fields() -> None:
+    provider, _ = _make_provider(input_tokens=100_000, cache_read=60_000, cache_create=40_000)
+    result, _ = await _chat(provider)
+    assert result.usage is not None
+    assert result.usage.context_pct == 1.0  # (100K + 60K + 40K) / 200K = 100%
 
 
 # 功能：验证事件发布顺序为 model_selected → token（×N） → usage

@@ -125,7 +125,8 @@ class AnthropicProvider:
         usage = final_message.usage
         cache_read: int = getattr(usage, "cache_read_input_tokens", 0) or 0
         cache_create: int = getattr(usage, "cache_creation_input_tokens", 0) or 0
-        context_pct = usage.input_tokens / _context_window(self._model)
+        total_input = usage.input_tokens + cache_read + cache_create
+        context_pct = total_input / _context_window(self._model)
 
         await bus.publish(
             LlmUsageEvent(
