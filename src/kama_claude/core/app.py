@@ -231,7 +231,11 @@ class CoreApp:
         self._broadcaster = IpcEventBroadcaster(trace=self._trace)
         self._bus.subscribe(self._broadcaster.handle)
         sessions_root = Path("~/.kama/sessions").expanduser()
-        store = SessionStore(sessions_root)
+        store = SessionStore(
+            sessions_root,
+            tool_result_limit=self._config.compaction.tool_result_limit,
+            tool_result_keep=self._config.compaction.tool_result_keep,
+        )
         assert self._config is not None
         compact_provider = AnthropicProvider(self._config.llm.default_model)
 

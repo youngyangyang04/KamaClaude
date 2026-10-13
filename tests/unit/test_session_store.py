@@ -89,3 +89,18 @@ def test_notes_read_and_append(tmp_path: Path) -> None:
     notes = store.read_notes("sess-1")
     assert "Python 3.12" in notes
     assert "run-1" in notes
+
+
+# 功能：验证构造时传入的 tool_result 截断阈值会真正作用于 read_messages
+# 设计：用远小于默认值的 limit/keep 构造 store，写入超长 tool_result 后读取，断言内容按传入的 keep 截断——这正是原 bug（配置改了不生效）的回归测试
+def test_read_messages_uses_injected_truncation_params(tmp_path: Path) -> None:
+    store = SessionStore(tmp_path, tool_result_limit=50, tool_result_keep=10)
+    store.append_message(
+        "sess-1",
+        "user",
+        [{"type": "tool_result", "tool_use_id": "t1", "content": "x" * 100}],
+        run_id="run-1",
+    )
+    content = store.read_messages("sess-1")[0]["content"][0]["content"]
+    assert content.startswith("x" * 10)
+    assert "chars omitted" in content

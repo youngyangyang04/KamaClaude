@@ -6,6 +6,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from kama_claude.core.compact.budget import (
+    TOOL_RESULT_KEEP,
+    TOOL_RESULT_LIMIT,
+    truncate_tool_results,
+)
 from kama_claude.core.session.model import Session
 
 logger = logging.getLogger(__name__)
@@ -19,10 +24,17 @@ def _now() -> str:
 
 
 class SessionStore:
-    # 初始化 session 文件存储根目录
-    def __init__(self, root: Path) -> None:
+    # 初始化 session 文件存储，root 为根目录，tool_result 截断阈值默认与 budget 模块常量一致
+    def __init__(
+        self,
+        root: Path,
+        tool_result_limit: int = TOOL_RESULT_LIMIT,
+        tool_result_keep: int = TOOL_RESULT_KEEP,
+    ) -> None:
         self._root = root.expanduser()
         self._root.mkdir(parents=True, exist_ok=True)
+        self._tool_result_limit = tool_result_limit
+        self._tool_result_keep = tool_result_keep
 
     # 返回指定 session 的目录路径
     def session_dir(self, sid: str) -> Path:
@@ -104,8 +116,11 @@ class SessionStore:
             messages.append({"role": role, "content": row.get("content", "")})
 
         messages = self._trim_orphan_tool_use(messages)
-        from kama_claude.core.compact.budget import truncate_tool_results
-        return truncate_tool_results(messages)
+        return truncate_tool_results(
+            messages,
+            limit=self._tool_result_limit,
+            keep=self._tool_result_keep,
+        )
 
     # 裁掉尾部未配对 tool_use 以及其后的消息，避免 Anthropic messages.invalid
     def _trim_orphan_tool_use(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
